@@ -1,0 +1,21 @@
+# Node (Expo)
+mobile/node_modules
+mobile/.expo
+mobile/.expo-shared
+
+# Java (Spring Boot)
+backend/target/
+*.log
+
+# Python
+ai-service/venv/
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
+
