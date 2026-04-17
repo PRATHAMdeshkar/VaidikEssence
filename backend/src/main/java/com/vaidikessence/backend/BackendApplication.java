@@ -1,4 +1,4 @@
-package com.vaidikwssence.backend;
+package com.vaidikessence.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
