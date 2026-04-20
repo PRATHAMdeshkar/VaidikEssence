@@ -30,6 +30,10 @@ public class AuthService {
         }
 
         String token = jwtUtil.generateToken(user.getEmail());
-        return new AuthResponseDto(token);
+        return new AuthResponseDto(
+                token,
+                user.getEmail(),
+                user.getPhoneNumber(),
+                user.getName());
     }
 }
