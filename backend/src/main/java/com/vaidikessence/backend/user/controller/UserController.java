@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.vaidikessence.backend.user.dto.UserRequestDto;
 import com.vaidikessence.backend.user.dto.UserResponseDto;
 import com.vaidikessence.backend.user.service.UserService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 
 import java.util.List;
 
@@ -23,6 +24,7 @@ public class UserController {
         this.userService = userService;
     }
 
+    @SecurityRequirements
     @PostMapping("/register")
     public UserResponseDto registerUser(@RequestBody UserRequestDto request) {
         return userService.createUser(request);
