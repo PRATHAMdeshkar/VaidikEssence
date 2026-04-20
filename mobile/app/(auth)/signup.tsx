@@ -1,17 +1,46 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native'
-import React, { useState } from 'react'
-import { useRouter } from 'expo-router'
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import { useRouter } from 'expo-router';
+import { registerUser } from '../services/authService';
 
 const Signup = () => {
   const router = useRouter()
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSignup = async () => {
+    if (!name.trim() || !email.trim() || !password.trim()) {
+      Alert.alert('Missing fields', 'Please enter name, email, and password.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      await registerUser({
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        phoneNumber: phoneNumber.trim(),
+        password,
+      });
+
+      Alert.alert('Success', 'Account created successfully. Please login.');
+      router.replace('/login');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Signup failed. Please try again.';
+      Alert.alert('Signup failed', message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      
+
       <Text style={styles.title}>Create Account 🚀</Text>
       <Text style={styles.subtitle}>Sign up to get started</Text>
 
@@ -29,6 +58,17 @@ const Signup = () => {
         style={styles.input}
         value={email}
         onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
+
+      <TextInput
+        placeholder="Phone Number"
+        placeholderTextColor="#999"
+        style={styles.input}
+        value={phoneNumber}
+        onChangeText={setPhoneNumber}
+        keyboardType="phone-pad"
       />
 
       <TextInput
@@ -40,8 +80,8 @@ const Signup = () => {
         onChangeText={setPassword}
       />
 
-      <TouchableOpacity style={styles.signupBtn}>
-        <Text style={styles.signupBtnText}>Sign Up</Text>
+      <TouchableOpacity style={styles.signupBtn} onPress={handleSignup} disabled={isSubmitting}>
+        {isSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.signupBtnText}>Sign Up</Text>}
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => router.back()}>
@@ -51,10 +91,10 @@ const Signup = () => {
       </TouchableOpacity>
 
     </View>
-  )
-}
+  );
+};
 
-export default Signup
+export default Signup;
 
 const styles = StyleSheet.create({
   container: {
@@ -98,4 +138,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
   },
-})
+});

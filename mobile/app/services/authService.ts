@@ -1,6 +1,6 @@
 import { apiRequest } from '../api/client';
 import { API_ROUTES } from '../api/routes';
-import { saveAuthData } from '../storage/authStorage';
+import { saveAuthData, clearAuthData } from '../storage/authStorage';
 
 export interface LoginRequest {
   email: string;
@@ -12,6 +12,20 @@ export interface LoginResponse {
   email: string;
   phone: string;
   name: string;
+}
+
+export interface RegisterRequest {
+  name: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+}
+
+export interface RegisterResponse {
+  id: string;
+  name: string;
+  email: string;
+  phoneNumber: string;
 }
 
 export async function loginUser(payload: LoginRequest): Promise<LoginResponse> {
@@ -28,4 +42,16 @@ export async function loginUser(payload: LoginRequest): Promise<LoginResponse> {
   });
 
   return response;
+}
+
+export async function registerUser(payload: RegisterRequest): Promise<RegisterResponse> {
+  return apiRequest<RegisterResponse>({
+    method: 'POST',
+    endpoint: API_ROUTES.users.register,
+    body: payload,
+  });
+}
+
+export async function logoutUser(): Promise<void> {
+  await clearAuthData();
 }

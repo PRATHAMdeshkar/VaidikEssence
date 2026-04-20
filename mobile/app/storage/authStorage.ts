@@ -18,11 +18,16 @@ export async function saveAuthData(token: string, user: StoredUser): Promise<voi
   ]);
 
   const savedToken = await AsyncStorage.getItem(STORAGE_KEYS.token);
-  // console.log('Saved JWT token:', savedToken);
+  console.log('Saved JWT token:', savedToken);
 }
 
 export async function getStoredToken(): Promise<string | null> {
   return AsyncStorage.getItem(STORAGE_KEYS.token);
+}
+
+export async function getStoredUser(): Promise<StoredUser | null> {
+  const user = await AsyncStorage.getItem(STORAGE_KEYS.user);
+  return user ? JSON.parse(user) : null;
 }
 
 export async function clearAuthData(): Promise<void> {
