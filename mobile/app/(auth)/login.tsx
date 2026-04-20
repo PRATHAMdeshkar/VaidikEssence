@@ -1,16 +1,40 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native'
-import React, { useState } from 'react'
-import { useRouter } from 'expo-router'
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import { useRouter } from 'expo-router';
+import { loginUser } from '../services/authService';
 
 const Login = () => {
-  const router = useRouter()
+  const router = useRouter();
 
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleLogin = async () => {
+    if (!email.trim() || !password.trim()) {
+      Alert.alert('Missing fields', 'Please enter both email and password.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      await loginUser({
+        email: email.trim(),
+        password,
+      });
+
+      router.replace('/(drawer)/(tabs)/home');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Login failed. Please try again.';
+      Alert.alert('Login failed', message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      
       <Text style={styles.title}>Welcome Back 👋</Text>
       <Text style={styles.subtitle}>Login to continue</Text>
 
@@ -20,6 +44,8 @@ const Login = () => {
         style={styles.input}
         value={email}
         onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
       />
 
       <TextInput
@@ -31,24 +57,18 @@ const Login = () => {
         onChangeText={setPassword}
       />
 
-      <TouchableOpacity 
-        style={styles.loginBtn}
-        onPress={() => router.push('/(drawer)/(tabs)/home')}
-      >
-        <Text style={styles.loginText}>Login</Text>
+      <TouchableOpacity style={styles.loginBtn} onPress={handleLogin} disabled={isSubmitting}>
+        {isSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.loginText}>Login</Text>}
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => router.push('/signup')}>
-        <Text style={styles.signupText}>
-          Don’t have an account? Sign Up
-        </Text>
+        <Text style={styles.signupText}>Don’t have an account? Sign Up</Text>
       </TouchableOpacity>
-
     </View>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;
 
 const styles = StyleSheet.create({
   container: {
@@ -81,6 +101,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 10,
+    minHeight: 52,
+    justifyContent: 'center',
+    opacity: 1,
   },
   loginText: {
     color: '#fff',
@@ -92,4 +115,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
   },
-})
+});
