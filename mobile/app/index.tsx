@@ -1,20 +1,7 @@
-import { Link } from "expo-router";
-import { Text, View } from "react-native";
+import { Redirect } from "expo-router";
 
 export default function Index() {
-  return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
-      <Link href="/about" style={{ marginTop: 20 }}>
-        Go to about
-      </Link>
-      
-    </View>
-  );
+  // return <Redirect href="/(drawer)/(tabs)/home" />;
+  return <Redirect href="/(auth)/login" />;
+
 }
