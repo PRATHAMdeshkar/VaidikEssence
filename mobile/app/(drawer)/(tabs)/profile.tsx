@@ -1,6 +1,10 @@
-import { StyleSheet, Text, View, Pressable, Alert } from "react-native";
 import { useEffect, useState } from "react";
+import { Alert, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
+
+import { AppButton } from "@/app/components/ui/AppButton";
+import { AppCard } from "@/app/components/ui/AppCard";
+import { theme } from "@/app/theme";
 import { getStoredUser } from "../../storage/authStorage";
 import { logoutUser } from "../../services/authService";
 
@@ -8,6 +12,15 @@ interface UserInfo {
   name: string;
   email: string;
   phone: string;
+}
+
+function ProfileField({ label, value }: { label: string; value: string }) {
+  return (
+    <AppCard>
+      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.value}>{value}</Text>
+    </AppCard>
+  );
 }
 
 export default function ProfileScreen() {
@@ -33,35 +46,31 @@ export default function ProfileScreen() {
   }, []);
 
   const handleLogout = async () => {
-    Alert.alert(
-      "Logout",
-      "Are you sure you want to logout?",
-      [
-        {
-          text: "Cancel",
-          onPress: () => {},
-          style: "cancel",
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      {
+        text: "Cancel",
+        onPress: () => {},
+        style: "cancel",
+      },
+      {
+        text: "Logout",
+        onPress: async () => {
+          try {
+            await logoutUser();
+            router.replace("/(auth)/login");
+          } catch (error) {
+            console.error("Logout error:", error);
+            Alert.alert("Error", "Failed to logout");
+          }
         },
-        {
-          text: "Logout",
-          onPress: async () => {
-            try {
-              await logoutUser();
-              router.replace("/(auth)/login");
-            } catch (error) {
-              console.error("Logout error:", error);
-              Alert.alert("Error", "Failed to logout");
-            }
-          },
-          style: "destructive",
-        },
-      ]
-    );
+        style: "destructive",
+      },
+    ]);
   };
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <View style={styles.centerContainer}>
         <Text style={styles.loadingText}>Loading profile...</Text>
       </View>
     );
@@ -69,7 +78,7 @@ export default function ProfileScreen() {
 
   if (!user) {
     return (
-      <View style={styles.container}>
+      <View style={styles.centerContainer}>
         <Text style={styles.title}>No user data found</Text>
       </View>
     );
@@ -78,83 +87,55 @@ export default function ProfileScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Profile</Text>
-      
-      <View style={styles.infoCard}>
-        <Text style={styles.label}>Name</Text>
-        <Text style={styles.value}>{user.name}</Text>
+
+      <View style={styles.content}>
+        <ProfileField label="Name" value={user.name} />
+        <ProfileField label="Email" value={user.email} />
+        <ProfileField label="Phone" value={user.phone} />
       </View>
 
-      <View style={styles.infoCard}>
-        <Text style={styles.label}>Email</Text>
-        <Text style={styles.value}>{user.email}</Text>
-      </View>
-
-      <View style={styles.infoCard}>
-        <Text style={styles.label}>Phone</Text>
-        <Text style={styles.value}>{user.phone}</Text>
-      </View>
-
-      <Pressable
-        style={({ pressed }) => [
-          styles.logoutButton,
-          pressed && styles.logoutButtonPressed,
-        ]}
-        onPress={handleLogout}
-      >
-        <Text style={styles.logoutButtonText}>Logout</Text>
-      </Pressable>
+      <AppButton title="Logout" onPress={handleLogout} variant="secondary" style={styles.logoutButton} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: "center",
     flex: 1,
+    backgroundColor: theme.colors.background,
+    padding: theme.spacing.md,
+    gap: theme.spacing.md,
+  },
+  centerContainer: {
+    flex: 1,
+    alignItems: "center",
     justifyContent: "center",
-    padding: 20,
+    backgroundColor: theme.colors.background,
+    padding: theme.spacing.md,
+  },
+  content: {
+    gap: theme.spacing.sm,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 30,
-  },
-  infoCard: {
-    width: "100%",
-    backgroundColor: "#f5f5f5",
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
+    ...theme.typography.heading,
+    color: theme.colors.textPrimary,
   },
   label: {
-    fontSize: 12,
-    fontWeight: "500",
-    color: "#666",
-    marginBottom: 4,
+    ...theme.typography.caption,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.xs,
+    textTransform: "uppercase",
+    letterSpacing: theme.tracking.wide,
   },
   value: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#000",
+    ...theme.typography.body,
+    color: theme.colors.textPrimary,
   },
   loadingText: {
-    fontSize: 16,
-    color: "#666",
+    ...theme.typography.body,
+    color: theme.colors.textSecondary,
   },
   logoutButton: {
-    width: "100%",
-    backgroundColor: "#ff4444",
-    borderRadius: 8,
-    padding: 14,
-    marginTop: 20,
-    alignItems: "center",
-  },
-  logoutButtonPressed: {
-    backgroundColor: "#cc0000",
-  },
-  logoutButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+    marginTop: theme.spacing.xs,
   },
 });
