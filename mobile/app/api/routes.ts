@@ -5,4 +5,7 @@ export const API_ROUTES = {
   users: {
     register: '/users/register',
   },
+  chat: {
+    ask: '/chat/ask',
+  },
 } as const;

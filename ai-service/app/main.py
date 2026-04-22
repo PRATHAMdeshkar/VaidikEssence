@@ -47,6 +47,7 @@ def ask(req: AskRequest) -> dict[str, object]:
         return {"answer": "I don't know.", "sources": []}
 
     context = "\n\n".join(context_parts)
+    print(f"Context for question '{question}':\n{context}\n--- End of context ---")
     answer = generate_answer(context=context, question=question)
 
     logger.info("Generated answer successfully")
