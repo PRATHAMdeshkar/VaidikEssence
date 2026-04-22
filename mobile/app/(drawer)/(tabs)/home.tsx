@@ -1,9 +1,15 @@
 import { StyleSheet, Text, View } from "react-native";
 
+import { AppCard } from "@/app/components/ui/AppCard";
+import { theme } from "@/app/theme";
+
 export default function HomeScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Home</Text>
+      <AppCard style={styles.card}>
+        <Text style={styles.title}>Home</Text>
+        <Text style={styles.subtitle}>A calm space for your daily reflections.</Text>
+      </AppCard>
     </View>
   );
 }
@@ -13,9 +19,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1,
     justifyContent: "center",
+    backgroundColor: theme.colors.background,
+    padding: theme.spacing.md,
+  },
+  card: {
+    width: "100%",
+    gap: theme.spacing.xs,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "600",
+    ...theme.typography.heading,
+    color: theme.colors.textPrimary,
+  },
+  subtitle: {
+    ...theme.typography.body,
+    color: theme.colors.textSecondary,
   },
 });

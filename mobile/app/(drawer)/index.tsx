@@ -1,10 +1,15 @@
 import { StyleSheet, Text, View } from "react-native";
 
+import { AppCard } from "@/app/components/ui/AppCard";
+import { theme } from "@/app/theme";
+
 export default function DrawerIndex() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Drawer Placeholder</Text>
-      <Text style={styles.subtitle}>Simple drawer message screen.</Text>
+      <AppCard style={styles.card}>
+        <Text style={styles.title}>Drawer Info</Text>
+        <Text style={styles.subtitle}>Simple drawer message screen.</Text>
+      </AppCard>
     </View>
   );
 }
@@ -14,16 +19,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1,
     justifyContent: "center",
-    paddingHorizontal: 16,
+    paddingHorizontal: theme.spacing.md,
+    backgroundColor: theme.colors.background,
+  },
+  card: {
+    width: "100%",
+    gap: theme.spacing.xs,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 8,
+    ...theme.typography.heading,
+    color: theme.colors.textPrimary,
   },
   subtitle: {
-    color: "#666",
-    fontSize: 16,
+    ...theme.typography.body,
+    color: theme.colors.textSecondary,
     textAlign: "center",
   },
 });

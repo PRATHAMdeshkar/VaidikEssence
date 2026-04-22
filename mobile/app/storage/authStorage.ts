@@ -25,6 +25,11 @@ export async function getStoredToken(): Promise<string | null> {
   return AsyncStorage.getItem(STORAGE_KEYS.token);
 }
 
+export async function getStoredUser(): Promise<StoredUser | null> {
+  const user = await AsyncStorage.getItem(STORAGE_KEYS.user);
+  return user ? JSON.parse(user) : null;
+}
+
 export async function clearAuthData(): Promise<void> {
   await AsyncStorage.multiRemove([STORAGE_KEYS.token, STORAGE_KEYS.user]);
 }

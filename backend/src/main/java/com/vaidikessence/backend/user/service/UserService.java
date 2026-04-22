@@ -54,4 +54,11 @@ public class UserService {
                 user.getPhoneNumber()
         );
     }
+
+    public UserResponseDto getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return mapToResponseDto(user);
+    }
 }

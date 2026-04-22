@@ -6,6 +6,8 @@ import {
 } from "@react-navigation/native";
 import { Drawer } from "expo-router/drawer";
 
+import { theme } from "@/app/theme";
+
 function getActiveTabTitle(route: RouteProp<ParamListBase, string>) {
   const focusedRouteName = getFocusedRouteNameFromRoute(route) ?? "home";
 
@@ -19,6 +21,22 @@ export default function DrawerLayout() {
     <Drawer
       screenOptions={{
         headerShown: true,
+        headerStyle: {
+          backgroundColor: theme.colors.surface,
+        },
+        headerTintColor: theme.colors.textPrimary,
+        headerTitleStyle: {
+          ...theme.typography.subheading,
+          color: theme.colors.textPrimary,
+        },
+        drawerActiveTintColor: theme.colors.secondary,
+        drawerInactiveTintColor: theme.colors.textSecondary,
+        drawerStyle: {
+          backgroundColor: theme.colors.background,
+        },
+        drawerLabelStyle: {
+          ...theme.typography.label,
+        },
       }}
     >
       <Drawer.Screen

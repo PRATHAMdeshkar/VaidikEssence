@@ -1,101 +1,150 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native'
-import React, { useState } from 'react'
-import { useRouter } from 'expo-router'
+import React, { useState } from "react";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useRouter } from "expo-router";
+
+import { AppButton } from "@/app/components/ui/AppButton";
+import { AppCard } from "@/app/components/ui/AppCard";
+import { AppInput } from "@/app/components/ui/AppInput";
+import { theme } from "@/app/theme";
+import { registerUser } from "../services/authService";
 
 const Signup = () => {
-  const router = useRouter()
+  const router = useRouter();
 
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSignup = async () => {
+    if (!name.trim() || !email.trim() || !password.trim()) {
+      Alert.alert("Missing fields", "Please enter name, email, and password.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      await registerUser({
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        phoneNumber: phoneNumber.trim(),
+        password,
+      });
+
+      Alert.alert("Success", "Account created successfully. Please login.");
+      router.replace("/login");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Signup failed. Please try again.";
+      Alert.alert("Signup failed", message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      
-      <Text style={styles.title}>Create Account 🚀</Text>
-      <Text style={styles.subtitle}>Sign up to get started</Text>
+      <KeyboardAvoidingView
+        style={styles.keyboardContainer}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.header}>
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>Sign up to get started.</Text>
+          </View>
 
-      <TextInput
-        placeholder="Full Name"
-        placeholderTextColor="#999"
-        style={styles.input}
-        value={name}
-        onChangeText={setName}
-      />
+          <AppCard style={styles.formCard}>
+            <AppInput label="Full Name" placeholder="Full Name" value={name} onChangeText={setName} />
 
-      <TextInput
-        placeholder="Email"
-        placeholderTextColor="#999"
-        style={styles.input}
-        value={email}
-        onChangeText={setEmail}
-      />
+            <AppInput
+              label="Email"
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
 
-      <TextInput
-        placeholder="Password"
-        placeholderTextColor="#999"
-        style={styles.input}
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+            <AppInput
+              label="Phone Number"
+              placeholder="Phone Number"
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+              keyboardType="phone-pad"
+            />
 
-      <TouchableOpacity style={styles.signupBtn}>
-        <Text style={styles.signupBtnText}>Sign Up</Text>
-      </TouchableOpacity>
+            <AppInput
+              label="Password"
+              placeholder="Password"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
 
-      <TouchableOpacity onPress={() => router.back()}>
-        <Text style={styles.loginText}>
-          Already have an account? Login
-        </Text>
-      </TouchableOpacity>
+            <AppButton title="Sign Up" onPress={handleSignup} loading={isSubmitting} style={styles.signupButton} />
+          </AppCard>
 
+          <TouchableOpacity onPress={() => router.back()}>
+            <Text style={styles.loginText}>Already have an account? Login</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
-  )
-}
+  );
+};
 
-export default Signup
+export default Signup;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#020617',
-    justifyContent: 'center',
-    padding: 20,
+    backgroundColor: theme.colors.background,
+  },
+  keyboardContainer: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    padding: theme.spacing.md,
+    gap: theme.spacing.md,
+  },
+  header: {
+    gap: theme.spacing.xs,
   },
   title: {
-    fontSize: 28,
-    color: '#fff',
-    fontWeight: 'bold',
-    marginBottom: 10,
+    ...theme.typography.title,
+    color: theme.colors.textPrimary,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#94A3B8',
-    marginBottom: 30,
+    ...theme.typography.body,
+    color: theme.colors.textSecondary,
   },
-  input: {
-    backgroundColor: '#1E293B',
-    padding: 15,
-    borderRadius: 12,
-    color: '#fff',
-    marginBottom: 15,
+  formCard: {
+    gap: theme.spacing.xs,
   },
-  signupBtn: {
-    backgroundColor: '#22C55E',
-    padding: 15,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  signupBtnText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
+  signupButton: {
+    marginTop: theme.spacing.xs,
   },
   loginText: {
-    color: '#38BDF8',
-    textAlign: 'center',
-    marginTop: 20,
+    ...theme.typography.label,
+    color: theme.colors.secondary,
+    textAlign: "center",
+    marginTop: theme.spacing.sm,
   },
-})
+});

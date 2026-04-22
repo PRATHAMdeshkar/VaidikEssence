@@ -35,6 +35,11 @@ public class UserController {
         return userService.getUserById(id);
     }
 
+    @GetMapping("/email/{email}")
+    public UserResponseDto getUserByEmail(@PathVariable String email) {
+        return userService.getUserByEmail(email);
+    }
+
     @GetMapping
     public List<UserResponseDto> getAllUsers() {
         return userService.getAllUsers();
