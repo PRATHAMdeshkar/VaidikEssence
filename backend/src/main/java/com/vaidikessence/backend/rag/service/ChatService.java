@@ -38,7 +38,8 @@ public class ChatService {
         }
 
         try {
-            RagResponse ragResponse = restTemplate.postForObject(ragApiUrl, new ChatRequest(question), RagResponse.class);
+            RagResponse ragResponse = restTemplate.postForObject(ragApiUrl, new ChatRequest(question),
+                    RagResponse.class);
             if (ragResponse == null) {
                 logger.warn("RAG response was null");
                 return new ChatResponse(FALLBACK_MESSAGE, List.of());
@@ -46,7 +47,7 @@ public class ChatService {
 
             String answer = ragResponse.getAnswer();
             List<Reference> references = mapReferences(ragResponse.getSources());
-            
+
             if (answer == null || answer.trim().isEmpty()) {
                 // If no proper answer but has references, return empty message with references
                 // If no references, return fallback message
@@ -74,5 +75,5 @@ public class ChatService {
                         source.getTopic() != null ? source.getTopic() : "",
                         source.getText() != null ? source.getText() : ""))
                 .toList();
-    }}
-
+    }
+}
