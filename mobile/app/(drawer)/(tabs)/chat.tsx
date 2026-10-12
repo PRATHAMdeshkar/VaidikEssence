@@ -14,12 +14,24 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppButton } from "@/app/components/ui/AppButton";
 import { AppCard } from "@/app/components/ui/AppCard";
 import { AppInput } from "@/app/components/ui/AppInput";
+import { askQuestion, ChatReference } from "@/app/services/chatService";
 import { theme } from "@/app/theme";
+
+type MessageRole = "user" | "assistant";
+
+interface ChatMessage {
+  role: MessageRole;
+  content: string;
+  references?: ChatReference[];
+}
 
 export default function ChatScreen() {
   const [question, setQuestion] = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const insets = useSafeAreaInsets();
   const composerOffset = useRef(new Animated.Value(0)).current;
+  const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
@@ -51,28 +63,98 @@ export default function ChatScreen() {
     };
   }, [composerOffset, insets.bottom]);
 
-  const handleSubmit = () => {
-    // Placeholder handler for future RAG integration.
-    console.log("Submitted question:", question);
+  const handleSubmit = async () => {
+    const trimmedQuestion = question.trim();
+    if (!trimmedQuestion || isLoading) {
+      return;
+    }
+
+    setMessages((prev) => [...prev, { role: "user", content: trimmedQuestion }]);
+    setQuestion("");
+    setIsLoading(true);
+
+    try {
+      const response = await askQuestion(trimmedQuestion);
+      const hasReferences = response.references && response.references.length > 0;
+      const assistantContent = response.message?.trim()
+        ? response.message
+        : hasReferences
+          ? "Here are relevant chapters:"
+          : "I could not generate a response right now.";
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: assistantContent,
+          references: response.references ?? [],
+        },
+      ]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "I could not reach the AI service right now. Please try again.",
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.contentWrapper}>
-        <Text style={styles.title}>RAG Chat (Template)</Text>
-        <Text style={styles.subtitle}>This screen is a UI placeholder for upcoming RAG integration.</Text>
+        {/* <Text style={styles.title}>RAG Chat (Template)</Text>
+        <Text style={styles.subtitle}>This screen is a UI placeholder for upcoming RAG integration.</Text> */}
 
         <ScrollView
+          ref={scrollRef}
           style={styles.messagesArea}
           contentContainerStyle={styles.messagesContent}
           keyboardShouldPersistTaps="handled"
+          onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
         >
-          <AppCard style={styles.dummyMessageCard}>
-            <Text style={styles.messageLabel}>Dummy Response</Text>
-            <Text style={styles.messageText}>
-              Your retrieval-augmented answer will appear here after we connect the RAG pipeline.
-            </Text>
-          </AppCard>
+          {messages.length === 0 ? (
+            <AppCard style={styles.emptyStateCard}>
+              <Text style={styles.messageLabel}>Ready</Text>
+              <Text style={styles.messageText}>Ask anything to start the RAG chat.</Text>
+            </AppCard>
+          ) : (
+            messages.map((message, index) => (
+              <View
+                key={`${message.role}-${index}`}
+                style={[
+                  styles.messageRow,
+                  message.role === "user" ? styles.userMessageRow : styles.assistantMessageRow,
+                ]}
+              >
+                <AppCard
+                  style={[
+                    styles.messageCard,
+                    message.role === "user" ? styles.userMessageCard : styles.assistantMessageCard,
+                  ]}
+                >
+                  <Text style={styles.messageText}>{message.content}</Text>
+                  {message.role === "assistant" &&
+                    message.references &&
+                    message.references.length > 0 && (
+                      <View style={styles.referenceWrapper}>
+                        {message.references.map((reference, refIndex) => (
+                          <View key={`ref-${index}-${refIndex}`} style={styles.referenceCard}>
+                            <Text style={styles.referenceChapterTitle}>
+                              Chapter {reference.chapter} - {reference.topic || "General"}
+                            </Text>
+                            <Text style={styles.referenceBody}>{reference.text}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                </AppCard>
+              </View>
+            ))
+          )}
         </ScrollView>
       </View>
 
@@ -95,7 +177,7 @@ export default function ChatScreen() {
             textAlignVertical="top"
             style={styles.questionInput}
           />
-          <AppButton title="Submit" onPress={handleSubmit} />
+          <AppButton title="Submit" onPress={handleSubmit} loading={isLoading} disabled={!question.trim()} />
         </AppCard>
       </Animated.View>
     </View>
@@ -128,7 +210,7 @@ const styles = StyleSheet.create({
   messagesContent: {
     paddingBottom: theme.spacing.md,
   },
-  dummyMessageCard: {
+  emptyStateCard: {
     gap: theme.spacing.xs,
   },
   messageLabel: {
@@ -137,9 +219,49 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: theme.tracking.wide,
   },
+  messageRow: {
+    width: "100%",
+    marginBottom: theme.spacing.sm,
+  },
+  assistantMessageRow: {
+    alignItems: "flex-start",
+  },
+  userMessageRow: {
+    alignItems: "flex-end",
+  },
+  messageCard: {
+    maxWidth: "84%",
+  },
+  assistantMessageCard: {
+    backgroundColor: theme.colors.surface,
+  },
+  userMessageCard: {
+    backgroundColor: theme.colors.surfaceMuted,
+  },
   messageText: {
     ...theme.typography.body,
     color: theme.colors.textPrimary,
+  },
+  referenceWrapper: {
+    marginTop: theme.spacing.sm,
+    gap: theme.spacing.xs,
+  },
+  referenceCard: {
+    backgroundColor: theme.colors.surfaceMuted,
+    padding: theme.spacing.sm,
+    borderRadius: 6,
+    marginTop: theme.spacing.xs,
+  },
+  referenceChapterTitle: {
+    ...theme.typography.caption,
+    color: theme.colors.primary,
+    fontWeight: "600",
+    marginBottom: theme.spacing.xs,
+  },
+  referenceBody: {
+    ...theme.typography.body,
+    color: theme.colors.textPrimary,
+    lineHeight: 20,
   },
   composerWrapper: {
     margin: theme.spacing.md,
@@ -147,8 +269,15 @@ const styles = StyleSheet.create({
   },
   composerCard: {
     marginBottom: 0,
+    borderRadius: 24,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   questionInput: {
-    minHeight: 120,
+    minHeight: 60,
+    maxHeight: 120, // prevents it from growing too much
+    fontSize: 16,
+    paddingVertical: 8,
+
   },
 });
